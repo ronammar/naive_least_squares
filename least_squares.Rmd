@@ -1,0 +1,228 @@
+---
+output: pdf_document
+---
+
+```{r global_options, include=FALSE}
+# use include=FALSE to have the chunk evaluated, but neither the code nor its output displayed.
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, fig.align="center")
+```
+
+# Least squares fit
+
+```{r, echo=FALSE}
+# Clear the current session, to avoid errors from persisting data structures
+rm(list=ls())
+
+# Free up memory by forcing garbage collection
+invisible(gc())
+
+# Pretty printing in knitr
+library(printr)
+
+# Do not convert character vectors to factors unless explicitly indicated
+options(stringsAsFactors=FALSE)
+
+startTime <- Sys.time()
+```
+
+To ensure this example is reproducible, we set the seed before beginning.
+
+```{r}
+# Manually set the seed to an arbitrary number for consistency in reports
+set.seed(1234)
+
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+## Creating toy data
+
+We'd like to use the *least squares* fit method to fit a line to some data. Our data will be based on the linear equation
+
+$Y = \beta_0 + \beta_1X + \epsilon ,$
+
+where $Y$ is a response vector, $X$ is an input vector, $\beta_0$ is the y-intercept, $\beta_1$ is the slope of the line and $\epsilon$ is a mean-zero random error term.
+
+For our example data, we choose the model
+
+$Y = 2 + 3X + \epsilon ,$
+
+where $\epsilon$ was generated from a normal distribution with mean zero.
+
+```{r}
+n <- 100
+```
+
+We sample **`r n`** points from our model. This will serve as our input data for the least squares fit.
+
+```{r}
+# We use runif to generate random x values from -2 to 2 so that we can compute
+# a sampling of y. We use a sd=2 for the error distribution to spread the data
+# a bit more.
+x <- runif(n, min=-2, max=2)
+yIntercept <- 2
+slope <- 3
+y <- yIntercept + slope * x + rnorm(n, sd=2)
+
+ggplot(data.frame(x, y), aes(x=x, y=y)) +
+  geom_point(pch=1, size=3) +
+  geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
+  theme_bw()
+```
+
+Above, we show our *n = `r n`* black data points based on the *population regression line* in red. When we fit a linear model to the data, this population regression line is unknown to us.
+
+
+## Least Squares fit
+
+When computing the least squares fit, our goal is to minimize the *residual sum of squares (RSS)* defined as
+
+$RSS = \displaystyle\sum_{i=1}^{n} (y_i - \hat{y}_i)^2 ,$
+
+where $y_i$ is the $i$-th observed response, $\hat{y}_i$ is the $i$-th predicted response and $(y_i - \hat{y}_i)$ is the $i$-th *residual*.
+
+We now build the model
+
+$\hat{y} = \hat{\beta}_0 + \hat{\beta}_1x ,$
+
+where $\hat{y}$ is a prediction of $Y$ on the basis of $X = x$.
+
+In this attempt, we need to estimate the intercept $\hat{\beta}_0$ and the slope $\hat{\beta}_1$. For each parameter combination, we'll determine the *RSS* for our *n = `r n`* points to find the minimum *RSS*.
+
+Without having knowledge of the standard least squares algorithm, I'm going to generate 300 random numbers from -10 to 10 for both $\beta_0$ and $\beta_1$. This is horribly inefficient, but we'll try it for simple regression:
+
+```{r}
+# precondition: length(yHat) == length(y)
+rss <- function(yHat) sum((y - yHat) ^ 2)
+
+leastSquaresFit <- function() {
+  minRss <- NULL
+  minParams <- NULL
+  
+  searchSpace <- seq(-10, 10, length.out=300)
+  for (b0 in searchSpace) {
+    for(b1 in searchSpace) {
+      yHat <- b0 + b1 * x
+      if (is.null(minRss) || rss(yHat) < minRss) {
+        minRss <- rss(yHat)
+        minParams <- list(b0, b1)
+      }
+    }
+  }
+  
+  return(minParams)
+}
+
+minParams <- leastSquaresFit()
+```
+
+Based on our least squares algorithm for the *n = `r n`* data points, we estimate the model
+
+$\hat{y} = `r minParams[[1]]` + `r minParams[[2]]`x$ 
+
+```{r}
+ggplot(data.frame(x, y), aes(x=x, y=y)) +
+  geom_point(pch=1, size=3) +
+  geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
+  geom_abline(intercept=minParams[[1]], slope=minParams[[2]], col="blue") +
+  theme_bw()
+```
+
+Plotted alongside the data and the population regression line, we see that our estimate is reasonably accurate.
+
+What happens when we decrease the number of samples points from `r n` to 15?
+
+```{r}
+n <- 15
+
+# Using the same population line as before
+x <- runif(n, min=-2, max=2)
+yIntercept <- 2
+slope <- 3
+y <- yIntercept + slope * x + rnorm(n, sd=2)
+
+minParams <- leastSquaresFit()
+```
+
+Now the model is
+
+$\hat{y} = `r minParams[[1]]` + `r minParams[[2]]`x$ 
+
+```{r}
+ggplot(data.frame(x, y), aes(x=x, y=y)) +
+  geom_point(pch=1, size=3) +
+  geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
+  geom_abline(intercept=minParams[[1]], slope=minParams[[2]], col="blue") +
+  theme_bw()
+```
+
+And the fit is less good.
+
+What if we keep the original sample size, but increase the error?
+
+```{r}
+n <- 100
+
+# Using the same population line as before
+x <- runif(n, min=-2, max=2)
+yIntercept <- 2
+slope <- 3
+y <- yIntercept + slope * x + rnorm(n, sd=6)
+
+minParams <- leastSquaresFit()
+```
+
+Now the model is
+
+$\hat{y} = `r minParams[[1]]` + `r minParams[[2]]`x$ 
+
+```{r}
+ggplot(data.frame(x, y), aes(x=x, y=y)) +
+  geom_point(pch=1, size=3) +
+  geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
+  geom_abline(intercept=minParams[[1]], slope=minParams[[2]], col="blue") +
+  theme_bw()
+```
+
+And, finally, with many sampled data points and a decreased error
+
+```{r}
+n <- 100
+
+# Using the same population line as before
+x <- runif(n, min=-2, max=2)
+yIntercept <- 2
+slope <- 3
+y <- yIntercept + slope * x + rnorm(n, sd=1)
+
+minParams <- leastSquaresFit()
+```
+
+Now the model is
+
+$\hat{y} = `r minParams[[1]]` + `r minParams[[2]]`x$ 
+
+```{r}
+ggplot(data.frame(x, y), aes(x=x, y=y)) +
+  geom_point(pch=1, size=3) +
+  geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
+  geom_abline(intercept=minParams[[1]], slope=minParams[[2]], col="blue") +
+  theme_bw()
+```
+
+As expected, increasing the number of points, or decreasing the error (or both) results in an improved model estimate.
+
+------
+
+\newpage
+
+## System Information
+
+***Time required to process this report:*** *`r format(Sys.time() - startTime)`*
+
+***R session information:***
+
+```{r, echo_session_info}
+sessionInfo()
+```
