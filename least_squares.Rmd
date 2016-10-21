@@ -1,5 +1,5 @@
 ---
-output: pdf_document
+output: html_document
 ---
 
 ```{r global_options, include=FALSE}
@@ -31,9 +31,7 @@ To ensure this example is reproducible, we set the seed before beginning.
 # Manually set the seed to an arbitrary number for consistency in reports
 set.seed(1234)
 
-library(dplyr)
 library(ggplot2)
-library(tidyr)
 ```
 
 ## Creating toy data
@@ -65,7 +63,7 @@ yIntercept <- 2
 slope <- 3
 y <- yIntercept + slope * x + rnorm(n, sd=2)
 
-ggplot(data.frame(x, y), aes(x=x, y=y)) +
+ggplot(NULL, aes(x=x, y=y)) +
   geom_point(pch=1, size=3) +
   geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
   theme_bw()
@@ -122,7 +120,7 @@ Based on our least squares algorithm for the *n = `r n`* data points, we estimat
 $\hat{y} = `r minParams[[1]]` + `r minParams[[2]]`x$ 
 
 ```{r}
-ggplot(data.frame(x, y), aes(x=x, y=y)) +
+ggplot(NULL, aes(x=x, y=y)) +
   geom_point(pch=1, size=3) +
   geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
   geom_abline(intercept=minParams[[1]], slope=minParams[[2]], col="blue") +
@@ -150,7 +148,7 @@ Now the model is
 $\hat{y} = `r minParams[[1]]` + `r minParams[[2]]`x$ 
 
 ```{r}
-ggplot(data.frame(x, y), aes(x=x, y=y)) +
+ggplot(NULL, aes(x=x, y=y)) +
   geom_point(pch=1, size=3) +
   geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
   geom_abline(intercept=minParams[[1]], slope=minParams[[2]], col="blue") +
@@ -178,7 +176,7 @@ Now the model is
 $\hat{y} = `r minParams[[1]]` + `r minParams[[2]]`x$ 
 
 ```{r}
-ggplot(data.frame(x, y), aes(x=x, y=y)) +
+ggplot(NULL, aes(x=x, y=y)) +
   geom_point(pch=1, size=3) +
   geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
   geom_abline(intercept=minParams[[1]], slope=minParams[[2]], col="blue") +
@@ -204,7 +202,7 @@ Now the model is
 $\hat{y} = `r minParams[[1]]` + `r minParams[[2]]`x$ 
 
 ```{r}
-ggplot(data.frame(x, y), aes(x=x, y=y)) +
+ggplot(NULL, aes(x=x, y=y)) +
   geom_point(pch=1, size=3) +
   geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
   geom_abline(intercept=minParams[[1]], slope=minParams[[2]], col="blue") +
