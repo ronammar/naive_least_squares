@@ -211,9 +211,33 @@ ggplot(NULL, aes(x=x, y=y)) +
 
 As expected, increasing the number of points, or decreasing the error (or both) results in an improved model estimate.
 
-------
+**NOTE:* Here, I attempted to write a naive method to build linear models. Using `R`'s built-in `lm()` function, we get the following
 
-\newpage
+```{r}
+# Create the original sample data:
+x <- runif(n, min=-2, max=2)
+yIntercept <- 2
+slope <- 3
+y <- yIntercept + slope * x + rnorm(n, sd=2)
+
+rModel <- lm(y ~ x)
+```
+
+The model output by base `R`'s function is
+
+$\hat{y} = `r rModel$coefficients[[1]]` + `r rModel$coefficients[[2]]`x$ 
+
+```{r}
+ggplot(NULL, aes(x=x, y=y)) +
+  geom_point(pch=1, size=3) +
+  geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
+  geom_abline(intercept=rModel$coefficients[[1]], slope=rModel$coefficients[[2]], col="blue") +
+  theme_bw()
+```
+
+We've done a reasonable job approximating the output from `lm()`.
+
+------
 
 ## System Information
 
