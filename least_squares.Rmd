@@ -244,8 +244,31 @@ $\hat{\beta}_1 = \frac{\sum_{i=1}^{n} (x_i - \bar{x}) (y_i - \bar{y}) }{\sum_{i=
 $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$
 
 ```{r, minimizers}
+# Continuing with the x and y from the previous example where lm() was applied
+numerator <- 0
+denominator <- 0
+for (i in 1:n) {
+  numerator <- numerator + (x[i] - mean(x)) * (y[i] - mean(y))
+  denominator <- denominator + (x[i] - mean(x)) ^ 2 
+}
 
+lsMinSlope <- numerator / denominator
+lsMinIntercept <- mean(y) - lsMinSlope * mean(x)
 ```
+
+Our minimizer-based model is
+
+$\hat{y} = `r lsMinIntercept` + `r lsMinSlope`x$ 
+
+```{r}
+ggplot(NULL, aes(x=x, y=y)) +
+  geom_point(pch=1, size=3) +
+  geom_abline(intercept=yIntercept, slope=slope, col="tomato") +
+  geom_abline(intercept=lsMinIntercept, slope=lsMinSlope, col="blue") +
+  theme_bw()
+```
+
+This matches with the output from `R`'s `lm()` function, and, unlike our naive method, doesn't require a grid-search-like algorithm.
 
 ## Future directions
 
