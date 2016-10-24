@@ -237,6 +237,20 @@ ggplot(NULL, aes(x=x, y=y)) +
 
 We've done a reasonable job approximating the output from `lm()`.
 
+If we want to use the least squares minimizers (see [James *et al* (2013)](http://www-bcf.usc.edu/~gareth/ISL/), pg. 62), these are defined as
+
+$\hat{\beta}_1 = \frac{\sum_{i=1}^{n} (x_i - \bar{x}) (y_i - \bar{y}) }{\sum_{i=1}^{n} (x_i - \bar{x})^2}$ ,
+
+$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$
+
+```{r, minimizers}
+
+```
+
+## Future directions
+
+Later, we can assess the goodness-of-fit using $R^2$
+
 ------
 
 ## System Information
